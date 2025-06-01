@@ -1,36 +1,133 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}GrowEasy{% endblock %}</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        .sidebar {
+            background-color: #2d3748;
+        }
+        .nav-link, .niche-link {
+            transition: color 0.3s ease, transform 0.2s ease;
+        }
+        .nav-link:hover, .niche-link:hover {
+            color: #00c4b4;
+            transform: translateX(5px);
+        }
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background-color 0.3s ease, transform 0.2s ease, backdrop-filter 0.3s ease;
+        }
+        .btn-glass:hover {
+            background-color: #00a89a;
+            transform: translateY(-2px);
+            backdrop-filter: blur(4px);
+        }
+        .card {
+            background-color: #2d3748;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            min-width: 0;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes pulseOnce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .animate-pulse-once {
+            animation: pulseOnce 1s ease-in-out forwards;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            .sidebar.active {
+                display: block;
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 100%;
+                z-index: 50;
+            }
+        }
+    </style>
 </head>
-<body>
-    <div class="sidebar">
-        <h2>GrowEasy</h2>
-        <a href="{% url 'index' %}">Home</a>
-        <a href="{% url 'profile' %}">Profiles</a>
-        <a href="{% url 'schedule' %}">Scheduling</a>
-        <a href="{% url 'chat' %}">Chat</a>
-        <a href="{% url 'reviews' %}">Reviews</a>
-        <a href="{% url 'progress' %}">Progress</a>
-        <a href="{% url 'community' %}">Community</a>
-        <a href="{% url 'resources' %}">Resources</a>
-        {% if user.is_authenticated %}
-            <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn" style="width:100%;">Logout</button>
-            </form>
-        {% else %}
-            <a href="{% url 'login' %}">Sign In</a>
-            <a href="{% url 'signup' %}">Sign Up</a>
+<body class="min-h-screen flex">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar w-64 min-h-screen p-6">
+        <a href="/" class="text-2xl font-bold text-white mb-8 block">GrowEasy</a>
+        {% if not user.is_authenticated %}
+            <div class="mb-8">
+                <p class="text-gray-400 mb-2">Sign in to unlock features.</p>
+                <a href="{% url 'login' %}" class="btn-glass text-white px-4 py-2 rounded-lg flex items-center">
+                    <span class="mr-2">→</span> Sign In
+                </a>
+            </div>
         {% endif %}
-    </div>
-    <div class="content">
-        {% block content %}
-        {% endblock %}
-    </div>
+        <!-- Show full nav only if user is authenticated -->
+        {% if user.is_authenticated %}
+            <nav class="flex flex-col space-y-4 mb-8">
+                <a href="/" class="nav-link text-gray-300 hover:text-teal-400">Home</a>
+                <a href="/profiles" class="nav-link text-gray-300 hover:text-teal-400">Profiles</a>
+                <a href="/scheduling" class="nav-link text-gray-300 hover:text-teal-400">Scheduling</a>
+                <a href="/chat" class="nav-link text-gray-300 hover:text-teal-400">Chat</a>
+                <a href="/reviews" class="nav-link text-gray-300 hover:text-teal-400">Reviews</a>
+                <a href="/progress" class="nav-link text-gray-300 hover:text-teal-400">Progress</a>
+                <a href="/community" class="nav-link text-gray-300 hover:text-teal-400">Community</a>
+                <a href="/resources" class="nav-link text-gray-300 hover:text-teal-400">Resources</a>
+                <a href="/pro" class="btn-glass text-white px-4 py-2 rounded-lg flex items-center">
+                    <span class="mr-2">🌟</span> Upgrade to Pro
+                </a>
+                <form method="post" action="{% url 'logout' %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-glass text-white px-4 py-2 rounded-lg flex items-center w-full text-left">
+                        <span class="mr-2">←</span> Logout
+                    </button>
+                </form>
+            </nav>
+        {% endif %}
+        <!-- Popular Niches -->
+        <div class="mt-8">
+            <h3 class="text-gray-300 font-semibold mb-4">Popular</h3>
+            <nav class="flex flex-col space-y-4">
+                <a href="/?niche=AI" class="niche-link text-gray-300 hover:text-teal-400 flex items-center">
+                    <span class="mr-2">🤖</span> AI
+                </a>
+                <a href="/?niche=Algorithms" class="niche-link text-gray-300 hover:text-teal-400 flex items-center">
+                    <span class="mr-2">📊</span> Algorithms
+                </a>
+                <a href="/?niche=CSS" class="niche-link text-gray-300 hover:text-teal-400 flex items-center">
+                    <span class="mr-2">🎨</span> CSS
+                </a>
+                <a href="/?niche=Databases" class="niche-link text-gray-300 hover:text-teal-400 flex items-center">
+                    <span class="mr-2">🗄️</span> Databases
+                </a>
+                <a href="/?niche=Fullstack" class="niche-link text-gray-300 hover:text-teal-400 flex items-center">
+                    <span class="mr-2">💻</span> Fullstack
+                </a>
+                <a href="/?niche=more" class="niche-link text-gray-300 hover:text-teal-400">Show more...</a>
+            </nav>
+        </div>
+    </aside>
+    <!-- Main Content -->
+    <main class="flex-grow p-8">
+        <div class="max-w-7xl mx-auto">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
 </body>
 </html>

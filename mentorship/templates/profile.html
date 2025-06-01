@@ -1,20 +1,157 @@
 {% extends 'base.html' %}
-{% block title %}Profile - GrowEasy{% endblock %}
+{% block title %}Your Profile - GrowEasy{% endblock %}
 {% block content %}
-    <h1>Profile</h1>
-    <div class="card">
-        {% if profile %}
-            <p><strong>User Type:</strong> {{ profile.user_type }}</p>
-            <p><strong>Skills:</strong> {{ profile.skills }}</p>
-            <p><strong>Goals:</strong> {{ profile.goals }}</p>
-            <p><strong>Availability:</strong> {{ profile.availability }}</p>
-        {% else %}
-            <p>Complete your profile below:</p>
-        {% endif %}
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn">Save Profile</button>
-        </form>
+<div class="container mx-auto px-4 py-12 relative">
+    <!-- Top Notification -->
+    <div id="top-notification" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-base font-semibold px-8 py-4 rounded-lg shadow-xl opacity-0 pointer-events-none transition-all duration-300 scale-95 translate-y-4 z-50">
+        Settings Saved
     </div>
+
+    <!-- Header Section -->
+    <div class="content-header text-center mb-12">
+        <h1 class="text-5xl font-extrabold text-white mb-4 tracking-tight">Your GrowEasy Profile</h1>
+        <p class="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">Personalize your profile to connect with mentors and mentees in the GrowEasy community.</p>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <!-- Profile Summary Card -->
+        {% if profile %}
+            <div class="card bg-gray-800 rounded-xl shadow-lg p-8 lg:col-span-1">
+                <div class="flex flex-col items-center">
+                    <img src="{% if profile.photo %}{{ profile.photo.url }}{% else %}https://via.placeholder.com/150{% endif %}" alt="{{ profile.user.username }}" class="w-32 h-32 rounded-full object-cover border-4 border-teal-500 mb-6">
+                    <h2 class="text-2xl font-bold text-white text-center">{{ profile.user.username }}</h2>
+                    <p class="text-teal-500 text-sm font-semibold mt-2">{{ profile.user_type|title }}</p>
+                    <div class="w-full mt-6 space-y-4">
+                        {% if profile.user_type == 'mentor' or profile.user_type == 'both' %}
+                            <div>
+                                <p class="text-gray-400 text-sm font-medium"><strong>Skills:</strong></p>
+                                <p class="text-gray-300 text-sm">{{ profile.skills|truncatewords:10 }}</p>
+                            </div>
+                        {% endif %}
+                        {% if profile.user_type == 'mentee' or profile.user_type == 'both' %}
+                            <div>
+                                <p class="text-gray-400 text-sm font-medium"><strong>Goals:</strong></p>
+                                <p class="text-gray-300 text-sm">{{ profile.goals|truncatewords:10 }}</p>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <p class="text-gray-400 text-sm font-medium"><strong>Availability:</strong></p>
+                            <p class="text-gray-300 text-sm">{{ profile.availability|truncatewords:10 }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card bg-gray-800 rounded-xl shadow-lg p-8 lg:col-span-1 text-center">
+                <p class="text-gray-400 text-lg">No profile created yet. Complete the form to get started!</p>
+            </div>
+        {% endif %}
+
+        <!-- Profile Edit Form -->
+        <div class="card bg-gray-800 rounded-xl shadow-lg p-8 lg:col-span-2">
+            <h2 class="text-2xl font-bold text-white mb-6">Update Your Profile</h2>
+            <form method="POST" enctype="multipart/form-data" class="space-y-6" id="profile-form">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex flex-col">
+                        <label for="{{ form.user_type.id_for_label }}" class="text-gray-300 text-sm font-medium mb-2">User Type</label>
+                        {{ form.user_type }}
+                        {{ form.user_type.errors }}
+                    </div>
+                    <div class="flex flex-col">
+                        <label for="{{ form.photo.id_for_label }}" class="text-gray-300 text-sm font-medium mb-2">Profile Photo</label>
+                        <div class="relative">
+                            <input type="file" id="{{ form.photo.id_for_label }}" name="{{ form.photo.name }}" class="hidden" onchange="this.nextElementSibling.textContent = this.files[0]?.name || 'No file chosen'">
+                            <label for="{{ form.photo.id_for_label }}" class="bg-gray-700 text-gray-300 px-4 py-2 rounded-lg cursor-pointer hover:bg-teal-500 hover:text-white transition duration-300 flex items-center justify-center">
+                                <span class="mr-2">📷</span> Choose Photo
+                            </label>
+                            <span class="text-gray-400 text-sm mt-2 block">No file chosen</span>
+                            {{ form.photo.errors }}
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col">
+                    <label for="{{ form.skills.id_for_label }}" class="text-gray-300 text-sm font-medium mb-2">Skills</label>
+                    {{ form.skills }}
+                    {{ form.skills.errors }}
+                </div>
+                <div class="flex flex-col">
+                    <label for="{{ form.goals.id_for_label }}" class="text-gray-300 text-sm font-medium mb-2">Goals</label>
+                    {{ form.goals }}
+                    {{ form.goals.errors }}
+                </div>
+                <div class="flex flex-col">
+                    <label for="{{ form.availability.id_for_label }}" class="text-gray-300 text-sm font-medium mb-2">Availability</label>
+                    {{ form.availability }}
+                    {{ form.availability.errors }}
+                </div>
+                <button type="submit" class="btn-glass w-full text-white px-4 py-2 rounded-lg flex items-center justify-center font-semibold hover:bg-teal-600 hover:scale-105 transition duration-300" id="save-profile-btn">
+                    <span class="mr-2">→</span> Save Profile
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    select, textarea {
+        background-color: #374151;
+        color: #d1d5db;
+        border: 1px solid #4b5563;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    select:focus, textarea:focus {
+        outline: none;
+        border-color: #14b8a6;
+        box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+    }
+    select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23d1d5db'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1em;
+    }
+    textarea {
+        height: 60px;
+        resize: vertical;
+        overflow-y: auto;
+    }
+    .btn-glass {
+        background: linear-gradient(145deg, rgba(20, 184, 166, 0.2), rgba(55, 65, 81, 0.8));
+        border: 1px solid #14b8a6;
+    }
+    #top-notification.show {
+        opacity: 1;
+        transform: -translate-x-1/2 translate-y-0 scale-100;
+        pointer-events: auto;
+    }
+</style>
+
+<script>
+    document.getElementById('profile-form').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default for demo; remove in production
+
+        // Simulate form validation (replace with actual validation logic)
+        const form = this;
+        const isValid = form.checkValidity(); // Basic HTML5 validation
+
+        if (isValid) {
+            const notification = document.getElementById('top-notification');
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                // In production, remove preventDefault and let the form submit
+                // form.submit();
+            }, 2000);
+        } else {
+            // Show form errors if invalid
+            form.reportValidity();
+        }
+    });
+</script>
 {% endblock %}

@@ -1,14 +1,27 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from .models import Profile, Review, Goal, Post, Resource
 from django import forms
 
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['user_type', 'skills', 'goals', 'availability']
+        fields = ['user_type', 'skills', 'goals', 'availability', 'photo']
+
+class CustomUserCreationForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    user_type = forms.ChoiceField(choices=Profile.USER_TYPE_CHOICES)
+    skills = forms.CharField(widget=forms.Textarea)
+    goals = forms.CharField(widget=forms.Textarea)
+    availability = forms.CharField(widget=forms.Textarea)
+    photo = forms.ImageField(required=False)
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password1', 'password2', 'user_type', 'skills', 'goals', 'availability', 'photo']
 
 class ReviewForm(forms.ModelForm):
     class Meta:
@@ -31,17 +44,37 @@ class ResourceForm(forms.ModelForm):
         fields = ['title', 'link']
 
 def index(request):
-    return render(request, 'index.html')
+    niche = request.GET.get('niche', '').lower()
+    mentors = Profile.objects.filter(user_type__in=['mentor', 'both'])
+    mentees = Profile.objects.filter(user_type__in=['mentee', 'both'])
+    if niche and niche != 'more':
+        mentors = mentors.filter(skills__icontains=niche)
+        mentees = mentees.filter(goals__icontains=niche)
+    context = {
+        'mentors': mentors,
+        'mentees': mentees,
+        'niche': niche if niche != 'more' else None,
+    }
+    return render(request, 'index.html', context)
 
 def signup(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
+            profile = Profile(
+                user=user,
+                user_type=form.cleaned_data['user_type'],
+                skills=form.cleaned_data['skills'],
+                goals=form.cleaned_data['goals'],
+                availability=form.cleaned_data['availability'],
+                photo=form.cleaned_data['photo']
+            )
+            profile.save()
             login(request, user)
             return redirect('profile')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     return render(request, 'signup.html', {'form': form})
 
 @login_required
@@ -50,20 +83,32 @@ def profile(request):
         profile = request.user.profile
     except Profile.DoesNotExist:
         profile = None
-
     if request.method == 'POST':
-        form = ProfileForm(request.POST)
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             profile = form.save(commit=False)
             profile.user = request.user
-            if profile.pk:  # If profile exists, update it
-                profile.save()
-            else:  # If profile doesn't exist, create it
-                profile.save()
+            profile.save()
             return redirect('profile')
     else:
         form = ProfileForm(instance=profile)
-    return render(request, 'profile.html', {'form': form, 'profile': profile})
+    
+    # Add mentors and mentees to the context, similar to index view
+    niche = request.GET.get('niche', '').lower()
+    mentors = Profile.objects.filter(user_type__in=['mentor', 'both'])
+    mentees = Profile.objects.filter(user_type__in=['mentee', 'both'])
+    if niche and niche != 'more':
+        mentors = mentors.filter(skills__icontains=niche)
+        mentees = mentees.filter(goals__icontains=niche)
+    
+    context = {
+        'form': form,
+        'profile': profile,
+        'mentors': mentors,
+        'mentees': mentees,
+        'niche': niche if niche != 'more' else None,
+    }
+    return render(request, 'profile.html', context)
 
 @login_required
 def schedule(request):
@@ -80,12 +125,13 @@ def reviews(request):
         if form.is_valid():
             review = form.save(commit=False)
             review.mentee = request.user
-            review.mentor = request.user  # Replace with actual mentor selection logic
+            mentor = User.objects.filter(profile__user_type__in=['mentor', 'both']).first()
+            review.mentor = mentor
             review.save()
             return redirect('reviews')
     else:
         form = ReviewForm()
-    reviews = Review.objects.filter(mentor=request.user)
+    reviews = Review.objects.filter(mentor__profile__user_type__in=['mentor', 'both'])
     return render(request, 'reviews.html', {'form': form, 'reviews': reviews})
 
 @login_required
@@ -129,3 +175,7 @@ def resources(request):
         form = ResourceForm()
     resources = Resource.objects.all().order_by('-created_at')
     return render(request, 'resources.html', {'form': form, 'resources': resources})
+
+@login_required
+def pro(request):
+    return render(request, 'pro.html')
