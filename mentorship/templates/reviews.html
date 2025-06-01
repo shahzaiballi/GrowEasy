@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Reviews - GrowEasy{% endblock %}
+{% block content %}
+    <h1>Reviews</h1>
+    <div class="card">
+        <h2>Leave a Review</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn">Submit Review</button>
+        </form>
+    </div>
+    <div class="card">
+        <h2>Your Reviews</h2>
+        {% for review in reviews %}
+            <p><strong>Rating:</strong> {{ review.rating }}/5</p>
+            <p><strong>Comment:</strong> {{ review.comment }}</p>
+            <p><strong>Date:</strong> {{ review.created_at }}</p>
+            <hr>
+        {% empty %}
+            <p>No reviews yet.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

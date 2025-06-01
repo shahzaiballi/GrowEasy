@@ -1,0 +1,78 @@
+body {
+    background-color: #1a1a2e;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    background-color: #16213e;
+    position: fixed;
+    padding: 20px;
+}
+.sidebar a {
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    padding: 10px 0;
+}
+.sidebar a:hover {
+    color: #d90429;
+}
+.content {
+    margin-left: 270px;
+    padding: 20px;
+}
+.card {
+    background-color: #0f3460;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+.btn {
+    background-color: #16213e;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+}
+.btn:hover {
+    background-color: #d90429;
+}
+.new {
+    background-color: #d90429;
+    color: #fff;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+form {
+    margin-top: 20px;
+}
+form p {
+    margin: 10px 0;
+}
+form label {
+    display: block;
+    margin-bottom: 5px;
+}
+form input, form textarea {
+    width: 100%;
+    padding: 8px;
+    background-color: #16213e;
+    border: none;
+    color: #fff;
+    border-radius: 3px;
+}
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+    .content {
+        margin-left: 0;
+    }
+}

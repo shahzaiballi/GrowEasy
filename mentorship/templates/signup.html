@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Sign Up - GrowEasy{% endblock %}
+{% block content %}
+    <h1>Sign Up</h1>
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn">Sign Up</button>
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GrowEasy{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="sidebar">
+        <h2>GrowEasy</h2>
+        <a href="{% url 'index' %}">Home</a>
+        <a href="{% url 'profile' %}">Profiles</a>
+        <a href="{% url 'schedule' %}">Scheduling</a>
+        <a href="{% url 'chat' %}">Chat</a>
+        <a href="{% url 'reviews' %}">Reviews</a>
+        <a href="{% url 'progress' %}">Progress</a>
+        <a href="{% url 'community' %}">Community</a>
+        <a href="{% url 'resources' %}">Resources</a>
+        {% if user.is_authenticated %}
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn" style="width:100%;">Logout</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}">Sign In</a>
+            <a href="{% url 'signup' %}">Sign Up</a>
+        {% endif %}
+    </div>
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

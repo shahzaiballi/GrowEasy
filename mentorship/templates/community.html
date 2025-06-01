@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Community - GrowEasy{% endblock %}
+{% block content %}
+    <h1>Community</h1>
+    <div class="card">
+        <h2>Create a Post</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn">Post</button>
+        </form>
+    </div>
+    <div class="card">
+        <h2>Forum Posts</h2>
+        {% for post in posts %}
+            <p><strong>{{ post.user.username }}</strong>: {{ post.content }}</p>
+            <p><small>{{ post.created_at }}</small></p>
+            <hr>
+        {% empty %}
+            <p>No posts yet.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

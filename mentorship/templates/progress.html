@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Progress - GrowEasy{% endblock %}
+{% block content %}
+    <h1>Progress Tracking</h1>
+    <div class="card">
+        <h2>Add a Goal</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn">Add Goal</button>
+        </form>
+    </div>
+    <div class="card">
+        <h2>Your Goals</h2>
+        {% for goal in goals %}
+            <p>{{ goal.description }} - {% if goal.completed %}Completed{% else %}In Progress{% endif %}</p>
+            <hr>
+        {% empty %}
+            <p>No goals yet.</p>
+        {% endfor %}
+    </div>
+{% endblock %}
